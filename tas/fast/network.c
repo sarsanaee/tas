@@ -42,7 +42,7 @@
 #include <tas_memif.h>
 #include "internal.h"
 
-#define PERTHREAD_MBUFS 1024
+#define PERTHREAD_MBUFS 2048
 #define MBUF_SIZE (BUFFER_SIZE + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
 #define RX_DESCRIPTORS 256
 #define TX_DESCRIPTORS 128
