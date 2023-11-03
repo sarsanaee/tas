@@ -42,7 +42,7 @@
 #include <tas_memif.h>
 #include "internal.h"
 
-#define PERTHREAD_MBUFS 2048
+#define PERTHREAD_MBUFS 1024
 #define MBUF_SIZE (BUFFER_SIZE + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)
 #define RX_DESCRIPTORS 256
 #define TX_DESCRIPTORS 128
@@ -113,9 +113,11 @@ int network_init(unsigned n_threads)
     fprintf(stderr, "No ethernet devices\n");
     goto error_exit;
   } else if (count > 1) {
-    fprintf(stderr, "Multiple ethernet devices\n");
+    fprintf(stderr, "Multiple ethernet devices %d\n", count);
     goto error_exit;
   }
+
+  // uint8_t my_mac[6] = {0x00,0x0d,0x3a,0x7e,0xc2,0x71};
 
   RTE_ETH_FOREACH_DEV(p) {
     net_port_id = p;
@@ -124,6 +126,13 @@ int network_init(unsigned n_threads)
   /* get mac address and device info */
   rte_eth_macaddr_get(net_port_id, &eth_addr);
   rte_eth_dev_info_get(net_port_id, &eth_devinfo);
+
+  // for (int i = 0; i < 6; i++){
+  //         printf("%2x %2x\n", my_mac[i], eth_addr.addr_bytes[i]);
+  //         if (eth_addr.addr_bytes[i] != my_mac[i])
+  //       	  goto error_exit;
+  // }
+ 
 
   if (eth_devinfo.max_rx_queues < n_threads ||
       eth_devinfo.max_tx_queues < n_threads)
@@ -218,7 +227,9 @@ int network_thread_init(struct dataplane_context *ctx)
   int ret;
 
   /* allocate mempool */
-  if ((t->pool = mempool_alloc()) == NULL) {
+  t->pool = mempool_alloc();
+  if (t->pool == NULL) {
+    fprintf(stderr, "network_thread_init: mempool_alloc failed %s\n", rte_strerror(rte_errno));
     goto error_mpool;
   }
 
@@ -324,6 +335,7 @@ static struct rte_mempool *mempool_alloc(void)
   char name[32];
   n = __sync_fetch_and_add(&pool_id, 1);
   snprintf(name, 32, "mbuf_pool_%u\n", n);
+  // printf("%s %d %d\n", name, PERTHREAD_MBUFS, MBUF_SIZE);
   return rte_mempool_create(name, PERTHREAD_MBUFS, MBUF_SIZE, 32,
           sizeof(struct rte_pktmbuf_pool_private), rte_pktmbuf_pool_init, NULL,
           rte_pktmbuf_init, NULL, rte_socket_id(), 0);

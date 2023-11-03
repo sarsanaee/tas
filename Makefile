@@ -5,54 +5,65 @@
 
 CPPFLAGS += -Iinclude/
 CPPFLAGS += $(EXTRA_CPPFLAGS)
-CFLAGS += -std=gnu99 -O3 -g -Wall -Werror -march=native -fno-omit-frame-pointer
+# CFLAGS += -std=gnu99 -O3 -g -Wall -Werror -march=native -fno-omit-frame-pointer
+CFLAGS += -std=gnu99 -O3 -g -Wall -march=native -fno-omit-frame-pointer
 CFLAGS += $(EXTRA_CFLAGS)
 CFLAGS_SHARED += $(CFLAGS) -fPIC
 LDFLAGS += -pthread -g
 LDFLAGS += $(EXTRA_LDFLAGS)
 LDLIBS += -lm -lpthread -lrt -ldl
+# LDLIBS += -lm -lpthread -lrt
 LDLIBS += $(EXTRA_LDLIBS)
 
 PREFIX ?= /usr/local
 SBINDIR ?= $(PREFIX)/sbin
 LIBDIR ?= $(PREFIX)/lib
 INCDIR ?= $(PREFIX)/include
+EXTRA_LIBS_DPDK= -libverbs -lmlx5
 
 
 ##############################################################################
 # DPDK configuration
 
 # Prefix for dpdk
-RTE_SDK ?= /usr/
+RTE_SDK ?= /home/alireza/dpdk-stable-19.11.14/build/install/usr/local
 # mpdts to compile
-DPDK_PMDS ?= ixgbe i40e tap virtio
+DPDK_PMDS ?= netvsc
 
 DPDK_CPPFLAGS += -I$(RTE_SDK)/include -I$(RTE_SDK)/include/dpdk \
   -I$(RTE_SDK)/include/x86_64-linux-gnu/dpdk/
-DPDK_LDFLAGS+= -L$(RTE_SDK)/lib/
+DPDK_CFLAGS += -I$(RTE_SDK)/include -I$(RTE_SDK)/include/dpdk \
+  -I$(RTE_SDK)/include/x86_64-linux-gnu/dpdk/
+DPDK_LDFLAGS+= -L$(RTE_SDK)/lib/x86_64-linux-gnu
+#-l:librte_pmd_netvsc.a 
+
 DPDK_LDLIBS+= \
   -Wl,--whole-archive \
-   $(addprefix -lrte_pmd_,$(DPDK_PMDS)) \
-  -lrte_eal \
-  -lrte_mempool \
-  -lrte_mempool_ring \
-  -lrte_hash \
-  -lrte_ring \
-  -lrte_kvargs \
-  -lrte_ethdev \
-  -lrte_mbuf \
-  -lnuma \
-  -lrte_bus_pci \
-  -lrte_pci \
-  -lrte_cmdline \
-  -lrte_timer \
-  -lrte_net \
-  -lrte_kni \
-  -lrte_bus_vdev \
-  -lrte_gso \
+  $(addprefix -lrte_pmd_,$(DPDK_PMDS)) \
+  -l:librte_pmd_mlx5.a \
+  -l:librte_pmd_netvsc.a \
+  -l:librte_eal.a \
+  -l:librte_mempool.a \
+  -l:librte_mempool_ring.a \
+  -l:librte_hash.a \
+  -l:librte_ring.a \
+  -l:librte_kvargs.a \
+  -l:librte_ethdev.a \
+  -l:librte_mbuf.a \
+  -l:librte_bus_pci.a \
+  -l:librte_pci.a \
+  -l:librte_cmdline.a \
+  -l:librte_timer.a \
+  -l:librte_kni.a \
+  -l:librte_net.a \
+  -l:librte_bus_vdev.a \
+  -l:librte_gso.a \
+  -l:librte_bus_vmbus.a \
   -Wl,--no-whole-archive \
+  -lnuma \
   -ldl \
   $(EXTRA_LIBS_DPDK)
+ 
 
 
 ##############################################################################
