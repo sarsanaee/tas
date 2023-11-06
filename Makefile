@@ -26,7 +26,7 @@ EXTRA_LIBS_DPDK= -libverbs -lmlx5
 # DPDK configuration
 
 # Prefix for dpdk
-RTE_SDK ?= /home/alireza/dpdk-stable-19.11.14/build/install/usr/local
+RTE_SDK ?= ${HOME}/dpdk-stable-19.11.14/build/install/usr/local
 # mpdts to compile
 DPDK_PMDS ?= netvsc
 
