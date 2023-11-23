@@ -37,7 +37,7 @@
 #define TCP_MSS 1448
 #define TCP_MAX_RTT 100000
 
-//#define SKIP_ACK 1
+#define SKIP_ACK 1
 
 struct flow_key {
   ip_addr_t local_ip;
@@ -46,7 +46,7 @@ struct flow_key {
   beui16_t remote_port;
 } __attribute__((packed));
 
-#if 1
+#if 0
 #define fs_lock(fs) util_spin_lock(&fs->lock)
 #define fs_unlock(fs) util_spin_unlock(&fs->lock)
 #else

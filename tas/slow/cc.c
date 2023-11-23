@@ -249,6 +249,9 @@ static inline void issue_retransmits(struct connection *c,
   } else {
     c->cnt_tx_pending = 0;
   }
+
+  // if (c->cnt_tx_pending)
+  // printf("%u %u %u\n", rtt, cur_ts, c->cnt_tx_pending);
 }
 
 /******************************************************************************/

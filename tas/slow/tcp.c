@@ -1014,7 +1014,8 @@ static inline int send_control_raw(uint64_t remote_mac, uint32_t remote_ip,
   p->tcp.seqno = t_beui32(local_seq);
   p->tcp.ackno = t_beui32(remote_seq);
   TCPH_HDRLEN_FLAGS_SET(&p->tcp, 5 + optlen / 4, flags);
-  p->tcp.wnd = t_beui16(11680); /* TODO */
+  // p->tcp.wnd = t_beui16(11680); /* TODO */
+  p->tcp.wnd = t_beui16(65000); /* TODO */
   p->tcp.chksum = 0;
   p->tcp.urgp = t_beui16(0);
 

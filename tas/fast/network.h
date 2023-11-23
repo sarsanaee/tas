@@ -32,6 +32,13 @@
 #include <rte_mbuf.h>
 #include <rte_ip.h>
 
+// include tcp header file
+#include <rte_tcp.h>
+
+// include ethernet header file
+#include <rte_ether.h>
+
+
 #include <fastpath.h>
 
 struct network_buf_handle;
@@ -86,6 +93,23 @@ static inline void network_buf_setlen(struct network_buf_handle *bh,
   mb->pkt_len = mb->data_len = len;
 }
 
+static inline uint64_t get_nanoseconds_from_boot() {
+    // Get the current CPU cycle count since boot
+    uint64_t boot_time_cycles = rte_get_tsc_cycles();
+
+    // Convert cycles to nanoseconds using the CPU frequency
+    uint64_t boot_time_ns = (boot_time_cycles * 1000000000) / rte_get_tsc_hz();
+
+    return boot_time_ns;
+}
+
+static inline uint64_t get_nanos(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t) ts.tv_sec * 1000 * 1000 * 1000 + ts.tv_nsec;
+}
+
 
 static inline int network_poll(struct network_thread *t, unsigned num,
     struct network_buf_handle **bhs)
@@ -105,6 +129,30 @@ static inline int network_poll(struct network_thread *t, unsigned num,
   }
 #endif
 
+  // for (unsigned i = 0; i < num; i++) {
+  //   struct rte_mbuf *mb = mbs[i];
+  //   // find the offset of data in the mbuf with dpdk function mtod
+  //   uint8_t *data = rte_pktmbuf_mtod(mb, uint8_t *);
+  //   // find the ethernet header
+  //   struct rte_ether_hdr *eth_hdr = (struct rte_ether_hdr *) data;
+
+  //   if (eth_hdr->ether_type != rte_cpu_to_be_16(RTE_ETHER_TYPE_IPV4)) {
+  //     continue;
+  //   }
+  //   // find the ip header
+  //   struct rte_ipv4_hdr *ip_hdr = (struct rte_ipv4_hdr *) (eth_hdr + 1);
+  //   // find the tcp header
+  //   struct rte_tcp_hdr *tcp_hdr = (struct rte_tcp_hdr *) (ip_hdr + 1);
+  //   // find the payload
+  //   uint8_t *payload = (uint8_t *) (tcp_hdr + 1);
+  //   // get the current time
+  //   uint64_t current_time = get_nanos();
+  //   // set the timestamp in the payload
+  //   *(((uint64_t *) payload) + 2) = current_time;
+  // }
+
+  // printf("timestamp tas rx: %" PRIu64 "\n", get_nanos());
+
   return num;
 }
 
@@ -121,7 +169,37 @@ static inline int network_send(struct network_thread *t, unsigned num,
   }
 #endif
 
-  return rte_eth_tx_burst(net_port_id, t->queue_id, mbs, num);
+  // for (size_t i = 0; i < num; i++) {
+  //   struct rte_mbuf *mb = mbs[i];
+  //   // find the offset of data in the mbuf with dpdk function mtod
+  //   uint8_t *data = rte_pktmbuf_mtod(mb, uint8_t *);
+  //   // find the ethernet header
+  //   struct rte_ether_hdr *eth_hdr = (struct rte_ether_hdr *) data;
+
+  //   // find the ip header
+  //   if (eth_hdr->ether_type != rte_cpu_to_be_16(RTE_ETHER_TYPE_IPV4)) {
+  //     continue;
+  //   }
+
+  //   struct rte_ipv4_hdr *ip_hdr = (struct rte_ipv4_hdr *) (eth_hdr + 1);
+  //   // find the tcp header
+  //   struct rte_tcp_hdr *tcp_hdr = (struct rte_tcp_hdr *) (ip_hdr + 1);
+  //   // find the payload
+  //   uint8_t *payload = (uint8_t *) (tcp_hdr + 1);
+  //   // get the current time
+  //   uint64_t current_time = get_nanos();
+  //   // set the timestamp in the payload
+  //   *(((uint64_t *) payload) + 1) = current_time;
+  // }
+
+
+  int ret = rte_eth_tx_burst(net_port_id, t->queue_id, mbs, num);
+
+  if (ret > 0) {
+    // printf("timestamp tas tx: %" PRIu64 "\n", get_nanos());
+  }
+
+  return ret;
 }
 
 

@@ -61,13 +61,17 @@ static uint64_t us_to_cycles(uint32_t us);
 int shm_preinit(void)
 {
   /* create shm for dma memory */
+  fprintf(stderr, "config.fp_hugepages %d\n", config.fp_hugepages);
   if (config.fp_hugepages) {
+    fprintf(stderr, "huge\n");
     tas_shm = util_create_shmsiszed_huge(FLEXNIC_NAME_DMA_MEM,
         config.shm_len, NULL);
   } else {
+    fprintf(stderr, "not huge!\n");
     tas_shm = util_create_shmsiszed(FLEXNIC_NAME_DMA_MEM, config.shm_len,
         NULL);
   }
+
   if (tas_shm == NULL) {
     fprintf(stderr, "mapping flexnic dma memory failed\n");
     return -1;

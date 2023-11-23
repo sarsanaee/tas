@@ -219,7 +219,7 @@ struct flextcp_pl_appctx {
 } __attribute__((packed));
 
 /** Enable out of order receive processing members */
-#define FLEXNIC_PL_OOO_RECV 1
+#define FLEXNIC_PL_OOO_RECV 0
 
 #define FLEXNIC_PL_FLOWST_SLOWPATH 1
 #define FLEXNIC_PL_FLOWST_ECN 8
